@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Sana Kalbimden 💌</title>
+  <style>
+    :root{
+      --bg1:#0b132b;
+      --bg2:#1c2541;
+      --accent:#ff4d6d;
+      --text:#edf2f7;
+      --muted:#a7b5c7;
+      --card:#101a34cc;
+      --shadow: 0 10px 30px -10px rgba(0,0,0,.6);
+      --radius: 18px;
+      --btn-radius:999px;
+    }
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      font:16px/1.6 system-ui, -apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial;
+      background:linear-gradient(180deg, var(--bg1), var(--bg2));
+      display:grid; place-items:center; overflow:hidden;
+    }
+    /* Sürekli düşen kalpler */
+    .falling-hearts span{
+      position:fixed;
+      top:-20px;
+      color:var(--accent);
+      font-size:14px;
+      animation: fall linear forwards;
+      opacity:.8;
+      pointer-events:none;
+    }
+    @keyframes fall{
+      to{ transform: translateY(110vh) rotate(360deg); opacity:0; }
+    }
+    .card{
+      position:relative; z-index:1;
+      width:min(92vw,560px);
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:28px 22px;
+      text-align:center;
+    }
+    .heading{font-size:24px; font-weight:700; margin-bottom:6px;}
+    .typing {
+      border-right: 2px solid var(--accent);
+      white-space: nowrap;
+      overflow: hidden;
+      width: 0;
+      animation: typing 3s steps(30, end) forwards, blink .8s infinite;
+      display: inline-block;
+    }
+    @keyframes typing { to { width: 100%; } }
+    @keyframes blink { 50% { border-color: transparent; } }
+
+    .sub{font-size:14px; color:var(--muted); margin-bottom:18px;}
+    .question{font-size:20px; font-weight:700; margin:14px 0 22px;}
+    .buttons{display:flex; justify-content:center; gap:12px; flex-wrap:wrap;}
+    button{
+      border:0; cursor:pointer;
+      padding:12px 22px;
+      border-radius:var(--btn-radius);
+      font-weight:700;
+      transition:.2s;
+      animation: heartbeat 2s infinite;
+    }
+    .btn-yes{background:linear-gradient(180deg,#ff5a7a,#ff305e);color:#fff;}
+    .btn-no{background:linear-gradient(180deg,#e2e8f0,#cbd5e1);color:#111;}
+    button:hover{transform:translateY(-2px) scale(1.05);}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .message{
+      margin-top:20px; min-height:2.4em; font-size:18px;
+      opacity:0; transform:translateY(8px);
+      transition:.4s;
+    }
+    .message.show{
+      opacity:1; transform:translateY(0);
+      text-shadow: 0 0 12px #ff4d6d, 0 0 20px #ff4d6d;
+    }
+    .message.pulse{animation:pulse 1.6s ease-in-out infinite;}
+    @keyframes pulse{
+      0%,100%{transform:scale(1);opacity:1}
+      50%{transform:scale(1.05);opacity:.9}
+    }
+    @keyframes heartbeat {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .effects{position:fixed;inset:0;pointer-events:none;z-index:2;}
+  </style>
+</head>
+<body>
+  <div class="falling-hearts" aria-hidden="true"></div>
+
+  <main class="card">
+    <h1 class="heading typing">Kalbimden bir soru var…</h1>
+    <p class="sub">Hazır mısın? Çünkü cevabın kalbime dokunacak ✨</p>
+    <p class="question" id="question">Kalbimin her atışında adının yankılanmasını ister misin?</p>
+    <div class="buttons">
+      <button id="yes" class="btn-yes">Evet</button>
+      <button id="no" class="btn-no">Hayır</button>
+    </div>
+    <div id="msg" class="message"></div>
+  </main>
+  <div class="effects"></div>
+
+  <script>
+    const yesBtn=document.getElementById("yes");
+    const noBtn=document.getElementById("no");
+    const msg=document.getElementById("msg");
+    const question=document.getElementById("question");
+    const effects=document.querySelector(".effects");
+    const falling=document.querySelector(".falling-hearts");
+
+    function setDisabled(state=true){
+      [yesBtn,noBtn].forEach(b=>b.disabled=state);
+    }
+    function showMessage(text,sub="",pulse=false){
+      msg.innerHTML=text+(sub?`<br><small>${sub}</small>`:"");
+      msg.classList.add("show");
+      if(pulse) msg.classList.add("pulse");
+    }
+    function heartBurst(x,y,count=24){
+      for(let i=0;i<count;i++){
+        const h=document.createElement("span");
+        h.textContent="❤";
+        h.style.position="absolute";
+        h.style.left=(x)+"px"; h.style.top=(y)+"px";
+        h.style.fontSize=(Math.random()*16+10)+"px";
+        const angle=Math.random()*Math.PI*2;
+        const dist=Math.random()*120+40;
+        const tx=Math.cos(angle)*dist;
+        const ty=Math.sin(angle)*dist;
+        h.style.transition="transform 1.2s ease,opacity 1.2s";
+        effects.appendChild(h);
+        requestAnimationFrame(()=>{
+          h.style.transform=`translate(${tx}px,${ty}px) scale(.8)`;
+          h.style.opacity="0";
+        });
+        setTimeout(()=>h.remove(),1200);
+      }
+    }
+    yesBtn.addEventListener("click",()=>{
+      setDisabled(true);
+      showMessage("Benim en büyük cevabım daima sensin 💖","Kalbim sonsuza kadar seninle.",true);
+      const r=yesBtn.getBoundingClientRect();
+      heartBurst(r.left+r.width/2,r.top+r.height/2);
+      question.textContent="Kalplerimiz birbirine kilitlendi!";
+    });
+    noBtn.addEventListener("click",()=>{
+      yesBtn.textContent="Evet"; noBtn.textContent="Tabii ki Evet";
+      setDisabled(true);
+      setTimeout(()=>{
+        showMessage("Aslında cevabın çoktan belli… ❤️","Senin kalbin bana ait.",true);
+        question.textContent="Cevap kalbinden geldi!";
+      },3000);
+    });
+
+    // Sürekli düşen kalpler
+    function spawnFallingHeart(){
+      const h=document.createElement("span");
+      h.textContent="❤";
+      h.style.left=Math.random()*100+"vw";
+      h.style.fontSize=(Math.random()*12+10)+"px";
+      h.style.animationDuration=(Math.random()*4+6)+"s";
+      falling.appendChild(h);
+      setTimeout(()=>h.remove(),10000);
+    }
+    setInterval(spawnFallingHeart,500);
+  </script>
+</body>
+</html>
